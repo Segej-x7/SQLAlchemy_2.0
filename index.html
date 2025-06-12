@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Полное руководство по SQLAlchemy 2.0 с Pydantic и FastAPI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+        }
+        pre code {
+            color: #0066cc; /* Синий цвет для кода */
+            background-color: transparent;
+            padding: 0;
+        }
+        pre code .comment {
+            color: #666666; /* Темно-серый цвет для комментариев */
+            font-style: italic;
+        }
+        .theory {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #2980b9;
+        }
+        .theory-title {
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .note-title {
+            font-weight: bold;
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        nav {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        nav li {
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        .code-block {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .copy-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Полное руководство по SQLAlchemy 2.0 с Pydantic и FastAPI</h1>
+        <p>Исчерпывающее руководство по современной разработке API с использованием Python</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#introduction">Введение</a></li>
+            <li><a href="#theory">Теоретическая основа ORM</a></li>
+            <li><a href="#part1">Часть 1: Основы SQLAlchemy 2.0</a></li>
+            <li><a href="#part2">Часть 2: Работа с данными (CRUD)</a></li>
+            <li><a href="#part3">Часть 3: Pydantic модели</a></li>
+            <li><a href="#part4">Часть 4: Интеграция с FastAPI</a></li>
+            <li><a href="#part5">Часть 5: Дополнительные возможности</a></li>
+            <li><a href="#postgresql">Часть 6: Работа с PostgreSQL</a></li>
+        </ul>
+    </nav>
+
+    <section id="introduction" class="section">
+        <h2>Введение</h2>
+        <p>SQLAlchemy — это мощная ORM (Object-Relational Mapping) библиотека для Python, которая позволяет работать с базами данных, используя объекты Python вместо прямого написания SQL-запросов. В этом руководстве мы рассмотрим:</p>
+        <ul>
+            <li>Основы SQLAlchemy 2.0 с современным синтаксисом типизации</li>
+            <li>Интеграцию с Pydantic для валидации данных и сериализации</li>
+            <li>Создание REST API с помощью FastAPI</li>
+            <li>Продвинутые техники работы с ORM</li>
+        </ul>
+    </section>
+
+    <section id="theory" class="section">
+        <h2>Теоретическая основа ORM</h2>
+        <p>ORM (Object-Relational Mapping) — это технология программирования, которая связывает базы данных с концепциями объектно-ориентированных языков программирования, создавая "виртуальную объектную базу данных".</p>
+        
+        <div class="theory">
+            <div class="theory-title">Преимущества ORM:</div>
+            <ul>
+                <li>Работа с БД через объекты Python</li>
+                <li>Автоматическая генерация SQL</li>
+                <li>Переносимость между разными СУБД</li>
+                <li>Безопасность (избегание SQL-инъекций)</li>
+                <li>Упрощение сложных запросов</li>
+            </ul>
+        </div>
+
+        <p>SQLAlchemy предоставляет два основных API:</p>
+        <ul>
+            <li><strong>Core</strong> (низкоуровневый SQL-инструментарий)</li>
+            <li><strong>ORM</strong> (высокоуровневая абстракция)</li>
+        </ul>
+    </section>
+
+    <section id="part1" class="section">
+        <h2>Часть 1: Основы SQLAlchemy 2.0</h2>
+        
+        <h3>1.1 Установка и настройка</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>pip install sqlalchemy pydantic fastapi uvicorn</code></pre>
+        </div>
+        <p>Проверка установки:</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>import sqlalchemy
+print(sqlalchemy.__version__)  <span class="comment"># Должна быть 2.0+</span></code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <p>SQLAlchemy 2.0 представляет новый стиль работы с ORM, который:</p>
+            <ul>
+                <li>Использует аннотации типов Python</li>
+                <li>Предлагает более явное объявление моделей</li>
+                <li>Улучшает поддержку статического анализа кода</li>
+                <li>Сохраняет обратную совместимость</li>
+            </ul>
+        </div>
+
+        <h3>1.2 Подключение к базе данных</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+<span class="comment"># Для SQLite (в памяти)</span>
+engine = create_engine("sqlite:///:memory:", echo=True)
+
+<span class="comment"># Для PostgreSQL</span>
+<span class="comment"># engine = create_engine("postgresql+psycopg2://user:password@localhost/dbname")</span>
+
+<span class="comment"># Для асинхронного режима</span>
+<span class="comment"># from sqlalchemy.ext.asyncio import create_async_engine</span>
+<span class="comment"># async_engine = create_async_engine("sqlite+aiosqlite:///:memory:")</span></code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>create_engine()</code> создает подключение к БД</li>
+                <li>Параметр <code>echo=True</code> включает логирование SQL-запросов</li>
+                <li>Формат URL подключения: <code>dialect+driver://username:password@host:port/database</code></li>
+                <li>Асинхронный режим требует специального драйвера (<code>aiosqlite</code> для SQLite, <code>asyncpg</code> для PostgreSQL)</li>
+            </ul>
+        </div>
+
+        <h3>1.3 Создание базовых моделей</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import String, ForeignKey
+from typing import Optional, List
+
+class Base(DeclarativeBase):
+    <span class="comment">"""
+    Базовый класс для всех моделей. 
+    Наследуется от DeclarativeBase, что делает класс модельным.
+    Все модели должны наследоваться от этого класса.
+    """</span>
+    pass
+
+class User(Base):
+    <span class="comment">"""
+    Модель пользователя с базовыми полями.
+    Каждое поле имеет аннотацию типа Mapped[тип] и mapped_column().
+    Это новый стиль объявления моделей в SQLAlchemy 2.0.
+    """</span>
+    __tablename__ = "users"  <span class="comment"># Имя таблицы в БД</span>
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(100), unique=True)
+    hashed_password: Mapped[str] = mapped_column(String(100))
+    is_active: Mapped[bool] = mapped_column(default=True)
+
+    <span class="comment"># Связь один-ко-многим с постами</span>
+    posts: Mapped[List["Post"]] = relationship(back_populates="author")
+
+    def __repr__(self):
+        return f"User(id={self.id}, username={self.username})"</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>__tablename__</code> — обязательный атрибут, определяющий имя таблицы в БД</li>
+                <li><code>Mapped[тип]</code> — аннотация типа для поле модели</li>
+                <li><code>mapped_column()</code> — замена <code>Column()</code> в SQLAlchemy 2.0, определяет параметры столбца</li>
+            </ul>
+            <p>Параметры столбцов:</p>
+            <ul>
+                <li><code>primary_key=True</code> — первичный ключ</li>
+                <li><code>autoincrement=True</code> — автоинкремент</li>
+                <li><code>unique=True</code> — уникальное значение</li>
+                <li><code>nullable=False</code> — не может быть NULL</li>
+                <li><code>default</code> — значение по умолчанию</li>
+            </ul>
+            <p>Отношения между моделями:</p>
+            <ul>
+                <li><code>relationship()</code> определяет связи между моделями</li>
+                <li><code>back_populates</code> создает двустороннюю связь между моделями</li>
+                <li><code>secondary</code> указывает ассоциативную таблицу для связи многие-ко-многим</li>
+            </ul>
+        </div>
+
+        <h3>1.4 Создание таблиц</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code><span class="comment"># Создаем все таблицы</span>
+Base.metadata.create_all(engine)
+
+<span class="comment"># Для асинхронного режима:</span>
+<span class="comment"># async with async_engine.begin() as conn:</span>
+<span class="comment">#     await conn.run_sync(Base.metadata.create_all)</span></code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>Base.metadata</code> содержит информацию о всех моделях</li>
+                <li><code>create_all()</code> создает таблицы в БД</li>
+                <li>В асинхронном режиме используем <code>run_sync()</code> для выполнения синхронных операций</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="part2" class="section">
+        <h2>Часть 2: Работа с данными (CRUD)</h2>
+        
+        <h3>2.1 Создание сессии</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from sqlalchemy.orm import Session
+
+<span class="comment"># Создаем фабрику сессий</span>
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+<span class="comment"># Функция для получения сессии (будет использоваться в FastAPI)</span>
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li>Сессия (<code>Session</code>) — это основной интерфейс для работы с БД</li>
+                <li><code>sessionmaker</code> — фабрика для создания сессий</li>
+                <li>Параметры:
+                    <ul>
+                        <li><code>autocommit=False</code> — отключаем автоматический коммит</li>
+                        <li><code>autoflush=False</code> — отключаем автоматический flush</li>
+                    </ul>
+                </li>
+                <li>В FastAPI используем dependency injection для управления сессиями</li>
+            </ul>
+        </div>
+
+        <h3>2.2 Примеры CRUD операций</h3>
+        
+        <h4>CREATE (Создание)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>def create_user(db: Session, username: str, email: str, password: str):
+    db_user = User(username=username, email=email, hashed_password=password)
+    db.add(db_user)  <span class="comment"># Добавляем объект в сессию</span>
+    db.commit()      <span class="comment"># Сохраняем изменения в БД</span>
+    db.refresh(db_user)  <span class="comment"># Обновляем объект из БД (получаем сгенерированный ID)</span>
+    return db_user</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>db.add()</code> — добавляет объект в сессию (подготовка к вставке)</li>
+                <li><code>db.commit()</code> — фиксирует изменения в БД</li>
+                <li><code>db.refresh()</code> — обновляет объект из БД (например, получает сгенерированный ID)</li>
+            </ul>
+        </div>
+
+        <h4>READ (Чтение)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>def get_user(db: Session, user_id: int):
+    return db.get(User, user_id)  <span class="comment"># Получение по первичному ключу</span>
+
+def get_user_by_email(db: Session, email: str):
+    return db.scalar(select(User).where(User.email == email))  <span class="comment"># Запрос с условием</span></code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>db.get()</code> — получение объекта по первичному ключу</li>
+                <li><code>select()</code> — создание SELECT запроса (новый стиль SQLAlchemy 2.0)</li>
+                <li><code>db.scalar()</code> — выполнение запроса и возврат одного значения</li>
+            </ul>
+        </div>
+
+        <h4>UPDATE (Обновление)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>def update_user(db: Session, user_id: int, new_data: dict):
+    db_user = db.get(User, user_id)
+    if not db_user:
+        return None
+    
+    for field, value in new_data.items():
+        setattr(db_user, field, value)  <span class="comment"># Обновляем атрибуты объекта</span>
+    
+    db.commit()      <span class="comment"># Фиксируем изменения</span>
+    db.refresh(db_user)  <span class="comment"># Обновляем объект из БД</span>
+    return db_user</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li>Изменение атрибутов объекта автоматически отслеживается сессией</li>
+                <li><code>commit()</code> сохраняет все изменения в БД</li>
+            </ul>
+        </div>
+
+        <h4>DELETE (Удаление)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>def delete_user(db: Session, user_id: int):
+    db_user = db.get(User, user_id)
+    if not db_user:
+        return False
+    
+    db.delete(db_user)  <span class="comment"># Помечаем объект для удаления</span>
+    db.commit()         <span class="comment"># Выполняем удаление в БД</span>
+    return True</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>db.delete()</code> — помечает объект для удаления</li>
+                <li>Изменения применяются только после <code>commit()</code></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="part3" class="section">
+        <h2>Часть 3: Pydantic модели</h2>
+        
+        <h3>3.1 Создание схем данных</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
+from typing import Optional
+
+class UserBase(BaseModel):
+    <span class="comment">"""Базовая схема пользователя"""</span>
+    username: str = Field(..., min_length=3, max_length=30, example="john_doe")
+    email: Optional[EmailStr] = Field(None, example="user@example.com")</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <p>Pydantic предоставляет:</p>
+            <ul>
+                <li>Валидацию данных</li>
+                <li>Сериализацию/десериализацию</li>
+                <li>Автоматическую документацию API</li>
+            </ul>
+            <p>Особенности:</p>
+            <ul>
+                <li><code>Field()</code> — дополнительные метаданные для поля</li>
+                <li><code>EmailStr</code> — валидация email</li>
+                <li><code>example</code> — пример значения для документации</li>
+                <li><code>Config.from_attributes = True</code> — позволяет создавать модель из ORM объекта</li>
+            </ul>
+        </div>
+
+        <h3>3.2 Валидация данных</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from pydantic import validator
+
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=8)
+    
+    @validator('username')
+    def username_alphanumeric(cls, v):
+        <span class="comment">"""Проверяем, что имя пользователя содержит только буквы и цифры"""</span>
+        assert v.isalnum(), 'Должен содержать только буквы и цифры'
+        return v</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li>Валидаторы Pydantic позволяют добавлять сложные проверки</li>
+                <li>Валидаторы вызываются автоматически при создании модели</li>
+                <li>Можно добавлять несколько валидаторов для одного поля</li>
+                <li>Валидаторы могут преобразовывать значения</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="part4" class="section">
+        <h2>Часть 4: Интеграция с FastAPI</h2>
+        
+        <h3>4.1 Настройка FastAPI приложения</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+<span class="comment"># Настройка CORS</span>
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <p>FastAPI — современный фреймворк для создания API:</p>
+            <ul>
+                <li>Высокая производительность (на основе Starlette)</li>
+                <li>Автоматическая документация (Swagger, ReDoc)</li>
+                <li>Встроенная валидация через Pydantic</li>
+                <li>Поддержка асинхронности</li>
+            </ul>
+            <p>CORS (Cross-Origin Resource Sharing) — механизм для доступа к API из браузера с других доменов.</p>
+        </div>
+
+        <h3>4.2 Роуты для пользователей</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>@router.post("/users/", response_model=UserRead, status_code=201)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    <span class="comment"># Проверка уникальности username</span>
+    db_user = db.scalar(select(User).where(User.username == user.username))
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    <span class="comment"># Создание пользователя</span>
+    db_user = User(username=user.username, email=user.email)
+    db.add(db_user)
+    db.commit()
+    return db_user</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>@router.post</code> — декоратор для обработки POST запросов</li>
+                <li><code>response_model</code> — определяет схему для ответа</li>
+                <li><code>Depends(get_db)</code> — dependency injection для получения сессии БД</li>
+                <li><code>HTTPException</code> — стандартный способ вернуть ошибку</li>
+            </ul>
+        </div>
+
+        <h3>4.3 Асинхронные роуты</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>@router.get("/async/posts/{post_id}")
+async def read_post_async(post_id: int, db: AsyncSession = Depends(get_async_db)):
+    result = await db.execute(select(Post).where(Post.id == post_id))
+    db_post = result.scalars().first()
+    return db_post</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li>Асинхронные роуты позволяют обрабатывать больше запросов</li>
+                <li>Используем <code>AsyncSession</code> для асинхронной работы с БД</li>
+                <li>Все операции с БД должны быть асинхронными (<code>await</code>)</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="part5" class="section">
+        <h2>Часть 5: Дополнительные возможности</h2>
+        
+        <h3>5.1 Миграции с Alembic</h3>
+        <p>Alembic — система миграций для SQLAlchemy:</p>
+        <ul>
+            <li>Отслеживает изменения моделей</li>
+            <li>Генерирует SQL-скрипты миграций</li>
+            <li>Позволяет откатывать изменения</li>
+        </ul>
+
+        <h3>5.2 Тестирование API</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+            <pre><code>from fastapi.testclient import TestClient
+
+def test_create_user(client):
+    response = client.post("/users/", json={"username": "test"})
+    assert response.status_code == 201</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>TestClient</code> позволяет тестировать API без запуска сервера</li>
+                <li>Можно мокать зависимости (например, тестовую БД)</li>
+                <li>Тесты должны быть изолированными</li>
+            </ul>
+        </div>
+
+
+<h3>5.3 Документация API</h3>
+<p>FastAPI автоматически генерирует:</p>
+<ul>
+    <li>Swagger UI (<code>/docs</code>)</li>
+    <li>ReDoc (<code>/redoc</code>)</li>
+</ul>
+<p>Дополнительные аннотации улучшают документацию:</p>
+<ul>
+    <li><code>summary</code> — краткое описание</li>
+    <li><code>description</code> — подробное описание</li>
+    <li><code>response_description</code> — описание ответа</li>
+    <li><code>tags</code> — группировка операций</li>
+</ul>
+</section>
+
+<section id="postgresql" class="section">
+<h2>Раздел: Работа с PostgreSQL в SQLAlchemy 2.0 и FastAPI</h2>
+
+<section id="part6">
+    <h2>Часть 6: Работа с PostgreSQL</h2>
+    
+    <h3>6.1 Переход с SQLite на PostgreSQL</h3>
+    
+    <h4>Подключение к PostgreSQL</h4>
+    <pre><code><span class="comment"># Замените подключение SQLite:
+# engine = create_engine("sqlite:///:memory:")</span>
+
+<span class="comment"># На подключение PostgreSQL:</span>
+from sqlalchemy import create_engine
+
+DATABASE_URL = "postgresql+psycopg2://username:password@localhost:5432/dbname"
+engine = create_engine(DATABASE_URL, pool_size=20, max_overflow=0)</code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Подключение к PostgreSQL</div>
+        <ul>
+            <li><code>postgresql+psycopg2</code> — указываем диалект PostgreSQL и драйвер psycopg2</li>
+            <li>Формат URL: <code>postgresql://user:password@host:port/database</code></li>
+            <li>Рекомендуемые параметры:
+                <ul>
+                    <li><code>pool_size</code> — количество постоянных соединений в пуле</li>
+                    <li><code>max_overflow</code> — максимальное количество временных соединений</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <h4>Установка зависимостей</h4>
+    <pre><code>pip install psycopg2-binary  <span class="comment"># или psycopg2 для production</span></code></pre>
+    
+    <p>Для асинхронного режима:</p>
+    <pre><code>pip install asyncpg</code></pre>
+    
+    <h4>Настройка моделей для PostgreSQL</h4>
+    <pre><code>from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
+from sqlalchemy import Text
+
+class Product(Base):
+    __tablename__ = "products"
+    
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, 
+                                  server_default=text("gen_random_uuid()"))
+    tags: Mapped[List[str]] = mapped_column(ARRAY(String(30)))
+    metadata: Mapped[dict] = mapped_column(JSONB)
+    description: Mapped[str] = mapped_column(Text)  <span class="comment"># Неограниченный текст</span></code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Специфичные типы PostgreSQL</div>
+        <ul>
+            <li><code>UUID</code> — тип для уникальных идентификаторов</li>
+            <li><code>ARRAY</code> — массив значений</li>
+            <li><code>JSONB</code> — бинарный JSON с возможностью индексации</li>
+            <li><code>Text</code> — неограниченный текстовый тип</li>
+        </ul>
+    </div>
+    
+    <h3>6.2 Особенности работы с PostgreSQL</h3>
+    
+    <h4>Транзакции и изоляция</h4>
+    <pre><code><span class="comment"># Явное управление транзакциями</span>
+with engine.begin() as conn:
+    conn.execute(text("INSERT INTO users (username) VALUES ('admin')"))
+    <span class="comment"># При ошибке транзакция автоматически откатывается</span></code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Транзакции в PostgreSQL</div>
+        <ul>
+            <li>PostgreSQL поддерживает различные уровни изоляции</li>
+            <li>Можно настроить при создании engine:
+                <pre><code>engine = create_engine(DATABASE_URL, isolation_level="REPEATABLE READ")</code></pre>
+            </li>
+        </ul>
+    </div>
+    
+    <h4>Полнотекстовый поиск</h4>
+    <pre><code>from sqlalchemy import text, func
+
+def search_posts(db: Session, query: str):
+    <span class="comment"># Используем PostgreSQL полнотекстовый поиск</span>
+    stmt = select(Post).where(
+        text("to_tsvector('english', posts.title || ' ' || posts.content) @@ plainto_tsquery('english', :query)")
+    ).params(query=query)
+    
+    return db.scalars(stmt).all()</code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Полнотекстовый поиск</div>
+        <ul>
+            <li><code>to_tsvector</code> — преобразует текст в поисковый вектор</li>
+            <li><code>plainto_tsquery</code> — преобразует поисковый запрос</li>
+            <li><code>@@</code> — оператор поиска соответствия</li>
+        </ul>
+    </div>
+    
+    <h3>6.3 Асинхронная работа с PostgreSQL</h3>
+    
+    <h4>Настройка асинхронного подключения</h4>
+    <pre><code>from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+
+ASYNC_DATABASE_URL = "postgresql+asyncpg://username:password@localhost:5432/dbname"
+async_engine = create_async_engine(ASYNC_DATABASE_URL, echo=True)
+
+async def get_async_db():
+    async with AsyncSession(async_engine) as session:
+        yield session</code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Асинхронный PostgreSQL</div>
+        <ul>
+            <li>Используем драйвер <code>asyncpg</code> для асинхронной работы</li>
+            <li>Все операции с БД должны быть асинхронными (<code>await</code>)</li>
+            <li>Сессии <code>AsyncSession</code> работают аналогично обычным, но с <code>await</code></li>
+        </ul>
+    </div>
+    
+    <h4>Пример асинхронного CRUD</h4>
+    <pre><code>from sqlalchemy.future import select
+
+async def async_create_user(db: AsyncSession, user_data: dict):
+    async with db.begin():
+        db_user = User(**user_data)
+        db.add(db_user)
+        await db.commit()
+        await db.refresh(db_user)
+        return db_user
+
+async def async_get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(select(User).offset(skip).limit(limit))
+    return result.scalars().all()</code></pre>
+    
+    <h3>6.4 Продвинутые возможности PostgreSQL</h3>
+    
+    <h4>Материализованные представления</h4>
+    <pre><code>from sqlalchemy import Table
+
+<span class="comment"># Создаем материализованное представление</span>
+user_stats = Table(
+    "user_stats",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id")),
+    Column("post_count", Integer),
+    Column("last_active", DateTime),
+    info={"materialized": True}  <span class="comment"># Специфично для PostgreSQL</span>
+)
+
+<span class="comment"># Обновление представления</span>
+async def refresh_user_stats(db: AsyncSession):
+    await db.execute(text("REFRESH MATERIALIZED VIEW user_stats"))</code></pre>
+    
+    <h4>Индексы для производительности</h4>
+    <pre><code>from sqlalchemy import Index
+
+<span class="comment"># Добавляем в модель User</span>
+Index("idx_user_email", User.email, postgresql_using="hash")
+Index("idx_user_username", User.username, postgresql_using="btree")
+
+<span class="comment"># Функциональный индекс</span>
+Index("idx_user_lower_email", func.lower(User.email), postgresql_where=(User.email != None))</code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Индексы в PostgreSQL</div>
+        <ul>
+            <li>PostgreSQL поддерживает различные типы индексов: B-tree, Hash, GIN, GiST</li>
+            <li>Индексы ускоряют поиск, но замедляют вставку</li>
+            <li>Функциональные индексы создаются на результат выражения</li>
+        </ul>
+    </div>
+    
+    <h3>6.5 Интеграция с FastAPI</h3>
+    
+    <h4>Настройка зависимостей</h4>
+    <pre><code>from fastapi import Depends
+
+<span class="comment"># Синхронная сессия</span>
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+<span class="comment"># Асинхронная сессия</span>
+async def get_async_db():
+    async with AsyncSessionLocal() as db:
+        yield db
+
+<span class="comment"># В роутах используем соответствующую зависимость</span>
+@router.get("/sync/users")
+def read_users(db: Session = Depends(get_db)):
+    ...
+
+@router.get("/async/users")
+async def read_users_async(db: AsyncSession = Depends(get_async_db)):
+    ...</code></pre>
+    
+    <h4>Пример конечной точки с PostgreSQL спецификой</h4>
+    <pre><code>@router.get("/posts/search")
+async def search_posts(
+    query: str = Query(..., min_length=2),
+    db: AsyncSession = Depends(get_async_db)
+):
+    <span class="comment">"""
+    Поиск постов с использованием полнотекстового поиска PostgreSQL
+    """</span>
+    stmt = select(Post).where(
+        text("to_tsvector('russian', title || ' ' || content) @@ websearch_to_tsquery('russian', :query)")
+    ).params(query=query)
+    
+    result = await db.execute(stmt)
+    return result.scalars().all()</code></pre>
+    
+    <h3>6.6 Миграции с Alembic для PostgreSQL</h3>
+    
+    <h4>Настройка alembic.ini</h4>
+    <pre><code>[alembic]
+sqlalchemy.url = postgresql+psycopg2://username:password@localhost:5432/dbname</code></pre>
+    
+    <h4>Генерация миграции</h4>
+    <pre><code>alembic revision --autogenerate -m "Add user table"
+alembic upgrade head</code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Миграции для PostgreSQL</div>
+        <ul>
+            <li>Поддержка специфичных типов данных (JSONB, ARRAY и т.д.)</li>
+            <li>Возможность создания индексов, материализованных представлений</li>
+            <li>Управление схемой (CREATE SCHEMA)</li>
+        </ul>
+    </div>
+    
+    <h3>6.7 Оптимизация запросов</h3>
+    
+    <h4>EXPLAIN ANALYZE в SQLAlchemy</h4>
+    <pre><code>from sqlalchemy import text
+
+async def analyze_query(db: AsyncSession):
+    stmt = select(User).join(Post).where(Post.title.ilike("%Python%"))
+    
+    <span class="comment"># Получаем план выполнения</span>
+    explain = await db.execute(text(f"EXPLAIN ANALYZE {stmt}"))
+    plan = "\n".join([r[0] for r in explain])
+    
+    <span class="comment"># Выполняем сам запрос</span>
+    result = await db.execute(stmt)
+    users = result.scalars().all()
+    
+    return {"plan": plan, "users": users}</code></pre>
+    
+    <div class="theory">
+        <div class="theory-title">Теория: Оптимизация запросов</div>
+        <ul>
+            <li><code>EXPLAIN ANALYZE</code> показывает план выполнения запроса</li>
+            <li>Помогает находить "узкие места" в запросах</li>
+            <li>Для сложных запросов можно добавить индексы</li>
+        </ul>
+    </div>
+    
+    <h3>Заключение по работе с PostgreSQL</h3>
+    
+    <p>Основные преимущества PostgreSQL в сравнении с SQLite:</p>
+    <ol>
+        <li>Поддержка множества пользователей и параллельных запросов</li>
+        <li>Расширенные типы данных (JSON, массивы, UUID и т.д.)</li>
+        <li>Полнотекстовый поиск</li>
+        <li>Возможности для сложных запросов (оконные функции, CTE)</li>
+        <li>Механизмы репликации и отказоустойчивости</li>
+    </ol>
+    
+    <div class="note">
+        <p><strong>Рекомендации для production:</strong></p>
+        <ul>
+            <li>Используйте пул соединений</li>
+            <li>Настройте правильные индексы</li>
+            <li>Регулярно делайте бэкапы</li>
+            <li>Мониторьте производительность</li>
+            <li>Рассмотрите использование реплик для чтения</li>
+        </ul>
+    </div>
+    
+    <h4>Пример полного конфига для production:</h4>
+    <pre><code>from sqlalchemy import create_engine
+from sqlalchemy.pool import QueuePool
+
+DATABASE_URL = "postgresql+psycopg2://user:password@host:5432/dbname"
+
+engine = create_engine(
+    DATABASE_URL,
+    poolclass=QueuePool,
+    pool_size=20,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_pre_ping=True,  <span class="comment"># Проверка соединения перед использованием</span>
+    pool_recycle=3600,   <span class="comment"># Пересоздавать соединения каждый час</span>
+    connect_args={
+        "connect_timeout": 5,
+        "application_name": "my_fastapi_app"
+    }
+)</code></pre>
+</section>
+</body>
+</html>
