@@ -397,6 +397,40 @@ def get_db():
             </ul>
         </div>
 
+
+
+        <h4>Создаём сессию</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+    <pre><code>db = SessionLocal()</code></pre>
+        </div>
+
+
+        <h4>Создаём пользователя</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Копировать</button>   
+            <pre><code>new_user = create_user(
+    db=db,
+    username="alex",
+    email="alex@example.com",
+    password="qwerty123"  <span class="comment"># Пароль в открытом виде (небезопасно!)</span>
+    )</code></pre>
+        </div>
+        
+        <div class="theory">
+            <div class="theory-title">Теория:</div>
+            <ul>
+                <li><code>db</code> — сессия подключения к базе данных (объект Session из SQLAlchemy)</li>
+                <li><code>new_user = create_user()</code> — Передали данные пользователя в БД</li>
+            </ul>
+        </div>
+
+
+
+
+
+
+
         <h4>READ (Чтение)</h4>
         <div class="code-block">
             <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
