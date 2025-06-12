@@ -263,7 +263,7 @@ engine = create_engine("sqlite:///:memory:", echo=True)
         <h3>1.3 Создание базовых моделей</h3>
         <div class="code-block">
             <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
-            <pre><code>from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+            <pre><code>from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey
 from typing import Optional, List
 
